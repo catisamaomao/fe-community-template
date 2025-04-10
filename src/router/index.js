@@ -29,8 +29,8 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: () => import('../views/AppRegister.vue')
-  }
-  
+  },
+  { path: '/email-login', name: 'EmailLogin', component: ()=> import('../views/AppEmailLogin.vue')  }
 ]
 
 const router = new VueRouter({
