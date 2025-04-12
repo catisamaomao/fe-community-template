@@ -34,6 +34,11 @@ const routes = [
         path: '/home/documentation',
         name: 'DocumentationTab',
         component: () => import('@/views/documentation/AppDocumentationTab.vue')
+      },
+      {
+        path: '/activity',
+        name: 'Activity',
+        component: () => import('@/views/activity/AppActivityTab.vue')
       }
     ]
   },

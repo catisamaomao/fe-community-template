@@ -58,7 +58,7 @@
       <el-table :data="list" border style="width: 100%;" v-loading="loading">
         <el-table-column prop="title" label="标题" align="left" />
         
-        <el-table-column prop="documentationType" label="分类" align="center">
+        <el-table-column label="分类" align="center">
           <template #default="scope">
             {{ getTypeName(scope.row.documentationType) }}
           </template>
@@ -66,7 +66,7 @@
   
         <el-table-column prop="providerName" label="提供者" align="center" />
   
-        <el-table-column prop="url" label="链接" align="center">
+        <el-table-column label="链接" align="center">
           <template #default="scope">
             <el-link :href="scope.row.url" target="_blank" v-if="scope.row.url">{{ scope.row.url }}</el-link>
             <span v-else>—</span>
@@ -103,7 +103,7 @@
             <el-input v-model="form.title" />
           </el-form-item>
           <el-form-item label="分类">
-            <el-select v-model="form.documentationType" placeholder="请选择分类">
+            <el-select v-model="form.documentationType" placeholder="请选择分类" multiple>
               <el-option
                 v-for="item in typeOptions"
                 :key="item.id"
@@ -163,7 +163,7 @@
           id: null,
           title: '',
           url: '',
-          documentationType: null,
+          documentationType: [],
           status: 0,
           planReleaseTime: null,
           releaseTime: null
@@ -196,9 +196,13 @@
           default: return '-'
         }
       },
-      getTypeName(typeId) {
-        const found = this.typeOptions.find(item => item.id === typeId)
-        return found ? found.name : '-'
+      getTypeName(typeIds) {
+        if (!Array.isArray(typeIds)) return '-'
+        const names = typeIds.map(id => {
+          const found = this.typeOptions.find(item => item.id === id)
+          return found ? found.name : null
+        }).filter(name => !!name)
+        return names.length > 0 ? names.join(', ') : '-'
       },
       fetchData() {
         this.loading = true
@@ -247,7 +251,7 @@
           id: null,
           title: '',
           url: '',
-          documentationType: null,
+          documentationType: [],
           status: 0,
           planReleaseTime: null,
           releaseTime: null

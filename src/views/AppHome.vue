@@ -43,6 +43,10 @@
           <i class="el-icon-folder"></i>
           <span>资料管理</span>
         </el-menu-item>
+        <el-menu-item index="/home/activity">
+          <i class="el-icon-folder"></i>
+          <span>活动管理</span>
+        </el-menu-item>
 
         <el-menu-item index="/home/profile">
           <i class="el-icon-user"></i>
