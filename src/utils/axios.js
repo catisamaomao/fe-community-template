@@ -5,7 +5,6 @@ import router from '@/router'
 let loadingInstance = null
 
 const service = axios.create({
-  // baseURL: process.env.VUE_APP_API_BASE || 'http://139.224.104.241:8082',
   baseURL: process.env.VUE_APP_API_BASE || 'http://localhost:8082',
   timeout: 10000
 })
@@ -32,8 +31,13 @@ service.interceptors.response.use(
 
     const res = response.data
 
-    // ✅ 兼容 null 情况的判断
-    if (!res.success || (res.errorCode && res.errorCode.code !== 0)) {
+    // ✅ 兼容 null / undefined 返回体
+    if (res == null || typeof res !== 'object') {
+      return {}
+    }
+
+    // ✅ 兼容后端只返回 {code: 0, message: ''} 或 {success: true}
+    if (res.success === false || (res.errorCode && res.errorCode.code !== 0)) {
       Message.error(res.errorCode?.message || '请求异常')
 
       if (res.errorCode?.code === 401) {
@@ -41,10 +45,11 @@ service.interceptors.response.use(
         router.push({ name: 'Login' })
       }
 
-      return Promise.reject(res.errorCode?.message || 'Error')
+      // ❗注意这里不要再 throw Error，而是 return Promise.reject()
+      return Promise.reject(new Error(res.errorCode?.message || '请求失败'))
     }
 
-    return res.data // 返回核心业务数据
+    return res.data || {} // 最后返回 data 字段，兜底是 {}
   },
   error => {
     loadingInstance?.close()
@@ -52,6 +57,5 @@ service.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
 
 export default service

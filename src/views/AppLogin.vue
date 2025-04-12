@@ -57,6 +57,8 @@ export default {
           .then(res => {
             this.$message.success('登录成功')
             localStorage.setItem('token', res.token)
+            console.log(res.token)
+            localStorage.setItem('userId',res.user.id)
             this.$router.push('/home')
           })
           .catch(err => {
