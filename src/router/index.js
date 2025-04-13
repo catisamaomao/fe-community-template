@@ -31,16 +31,17 @@ const routes = [
         meta: { requiresAuth: true }
       },
       {
-        path: '/home/documentation',
+        path: 'documentation',
         name: 'DocumentationTab',
         component: () => import('@/views/documentation/AppDocumentationTab.vue')
       },
       {
-        path: '/activity',
-        name: 'Activity',
+        path: 'activity',
+        name: 'ActivityTab',
         component: () => import('@/views/activity/AppActivityTab.vue')
       }
     ]
+    
   },
   {
     path: '/',
