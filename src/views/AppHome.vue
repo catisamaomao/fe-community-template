@@ -24,10 +24,13 @@
         active-text-color="#409EFF"
         class="el-menu-vertical"
       >
-        <el-menu-item index="/home/dashboard">
-          <i class="el-icon-s-home"></i>
-          <span>控制台</span>
-        </el-menu-item>
+      <el-submenu index="/home/console">
+    <template slot="title">
+      <i class="el-icon-s-tools"></i>
+      <span>控制台</span>
+    </template>
+    <el-menu-item index="/home/console/dictionary">字典管理</el-menu-item>
+  </el-submenu>
 
         <el-menu-item index="/forum">
           <i class="el-icon-chat-line-round"></i>

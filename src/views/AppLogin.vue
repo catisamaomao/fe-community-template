@@ -54,11 +54,15 @@ export default {
         if (!valid) return
         this.loading = true
         axios.post('/auth/login', this.form)
-          .then(res => {
+          .then(async res => {
             this.$message.success('登录成功')
             localStorage.setItem('token', res.token)
-            console.log(res.token)
-            localStorage.setItem('userId',res.user.id)
+            localStorage.setItem('userId', res.user.id)
+
+            // 登录成功后，拉取用户信息 & 字典缓存
+            await this.$store.dispatch('fetchUserInfo')
+            await this.$store.dispatch('fetchDictionaryOptions')
+
             this.$router.push('/home')
           })
           .catch(err => {

@@ -39,9 +39,25 @@ const routes = [
         path: 'activity',
         name: 'ActivityTab',
         component: () => import('@/views/activity/AppActivityTab.vue')
+      },
+      {
+        path: 'console',
+        name: 'Console',
+        component: () => import('@/views/console/AppConsole.vue'),
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '',
+            redirect: 'dictionary'
+          },
+          {
+            path: 'dictionary',
+            name: 'DictionaryManage',
+            component: () => import('@/views/console/dictionary/AppDictionaryManage.vue') // 注意改成了新的管理页
+          }
+        ]
       }
     ]
-    
   },
   {
     path: '/',
@@ -74,16 +90,14 @@ const router = new VueRouter({
   routes
 })
 
-// ✅ 全局前置守卫只判断是否登录
+// 全局前置守卫
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!token) {
       return next('/login')
     }
   }
-
   next()
 })
 

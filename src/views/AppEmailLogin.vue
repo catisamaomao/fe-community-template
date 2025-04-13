@@ -85,11 +85,12 @@
           if (!valid) return
           this.loading = true
           axios.post('/auth/login', this.form)
-            .then(res => {
+            .then(async res => {
               this.$message.success('登录成功')
               localStorage.setItem('token', res.token)
-              console.log(res.token)
               localStorage.setItem('userId',res.user.id)
+              await this.$store.dispatch('fetchUserInfo')
+              await this.$store.dispatch('fetchDictionaryOptions')
               this.$router.push('/home')
             })
             .catch(err => {
