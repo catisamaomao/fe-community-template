@@ -46,6 +46,7 @@ export default new Vuex.Store({
       try {
         const res = await service.post('/dictionary/init')
         commit('setDictionaryOptions', res || [])
+        console.log('初始化字典成功喵～')
       } catch (e) {
         console.error('初始化字典失败喵～', e)
       }

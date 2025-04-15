@@ -32,10 +32,16 @@
     <el-menu-item index="/home/console/dictionary">字典管理</el-menu-item>
   </el-submenu>
 
-        <el-menu-item index="/forum">
-          <i class="el-icon-chat-line-round"></i>
-          <span>论坛</span>
-        </el-menu-item>
+  <el-submenu index="/home/movement">
+  <template slot="title">
+    <i class="el-icon-user-solid"></i>
+    <span>社员异动</span>
+  </template>
+  <el-menu-item index="/home/movement/entry">入社管理</el-menu-item>
+  <el-menu-item index="/home/movement/change">异动管理</el-menu-item>
+  <el-menu-item index="/home/movement/leave">离社管理</el-menu-item>
+</el-submenu>
+
 
         <el-menu-item index="/home/announcement">
           <i class="el-icon-notebook-2"></i>
@@ -104,6 +110,7 @@ export default {
   async created() {
     try {
       await this.$store.dispatch('fetchUserInfo')
+      await this.$store.dispatch('fetchDictionaryOptions')
     } catch (error) {
       this.$message.error('用户信息加载失败')
     } finally {

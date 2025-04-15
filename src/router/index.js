@@ -53,7 +53,29 @@ const routes = [
           {
             path: 'dictionary',
             name: 'DictionaryManage',
-            component: () => import('@/views/console/dictionary/AppDictionaryManage.vue') // 注意改成了新的管理页
+            component: () => import('@/views/console/dictionary/AppDictionaryManage.vue')
+          }
+        ]
+      },
+      {
+        path: 'movement',
+        name: 'MemberMovement',
+        component: { render: h => h('router-view') }, // 空壳路由容器
+        children: [
+          {
+            path: 'entry',
+            name: 'MovementEntry',
+            component: () => import('@/views/entry/AppEntryAdmin.vue')
+          },
+          {
+            path: 'change',
+            name: 'MovementChange',
+            component: () => import('@/views/change/AppChangeAdmin.vue')
+          },
+          {
+            path: 'leave',
+            name: 'MovementLeave',
+            component: () => import('@/views/leave/AppLeaveAdmin.vue')
           }
         ]
       }
