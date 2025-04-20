@@ -31,12 +31,9 @@ service.interceptors.response.use(
 
     const res = response.data
 
-    // ✅ 兼容 null / undefined 返回体
     if (res == null || typeof res !== 'object') {
       return {}
     }
-
-    // ✅ 兼容后端只返回 {code: 0, message: ''} 或 {success: true}
     if (res.success === false || (res.errorCode && res.errorCode.code !== 0)) {
       Message.error(res.errorCode?.message || '请求异常')
 
@@ -45,11 +42,10 @@ service.interceptors.response.use(
         router.push({ name: 'Login' })
       }
 
-      // ❗注意这里不要再 throw Error，而是 return Promise.reject()
       return Promise.reject(new Error(res.errorCode?.message || '请求失败'))
     }
 
-    return res.data || {} // 最后返回 data 字段，兜底是 {}
+    return res.data || {} 
   },
   error => {
     loadingInstance?.close()

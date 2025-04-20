@@ -31,6 +31,19 @@
     </template>
     <el-menu-item index="/home/console/dictionary">字典管理</el-menu-item>
   </el-submenu>
+  <el-menu-item index="/home/department">
+  <i class="el-icon-s-home"></i>
+  <span>组织架构</span>
+</el-menu-item>
+<el-submenu index="/home/user">
+  <template slot="title">
+    <i class="el-icon-s-custom"></i>
+    <span>社员管理</span>
+  </template>
+  <el-menu-item index="/home/user/info">信息列表</el-menu-item>
+</el-submenu>
+
+
 
   <el-submenu index="/home/movement">
   <template slot="title">

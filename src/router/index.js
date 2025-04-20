@@ -20,6 +20,18 @@ const routes = [
         component: () => import('../views/AppHomeDashboard.vue')
       },
       {
+        path: 'user',
+        name: 'UserManage',
+        component: { render: h => h('router-view') },
+        children: [
+          {
+            path: 'info',
+            name: 'UserInfoTab',
+            component: () => import('@/views/user/AppUserInfoTab.vue')
+          }
+        ]
+      },      
+      {
         path: 'profile',
         name: 'UserProfile',
         component: () => import('@/views/user/AppProfile.vue')
@@ -58,9 +70,15 @@ const routes = [
         ]
       },
       {
+        path: 'department',
+        name: 'DepartmentManager',
+        component: () => import('@/views/department/AppDepartmentManager.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
         path: 'movement',
         name: 'MemberMovement',
-        component: { render: h => h('router-view') }, // 空壳路由容器
+        component: { render: h => h('router-view') },
         children: [
           {
             path: 'entry',
@@ -70,7 +88,7 @@ const routes = [
           {
             path: 'change',
             name: 'MovementChange',
-            component: () => import('@/views/change/AppChangeAdmin.vue')
+            component: () => import('@/views/change/AppChangeRecordTab.vue')
           },
           {
             path: 'leave',
@@ -112,7 +130,6 @@ const router = new VueRouter({
   routes
 })
 
-// 全局前置守卫
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   if (to.matched.some(record => record.meta.requiresAuth)) {
