@@ -96,10 +96,10 @@
           pageSize: 10
         },
         statusMap: {
-          0: '待审批',
-          1: '已通过',
-          2: '已撤销',
-          3: '已驳回'
+          1: '待审批',
+          2: '已通过',
+          3: '已撤销',
+          4: '已驳回'
         }
       }
     },
@@ -160,6 +160,10 @@
           this.$message.success('修改成功')
           this.editDialogVisible = false
           this.fetchData()
+        })
+        .catch(error =>{
+          console.error('修改失败：', error?.response?.data?.message || error.message || error)
+          this.$message.error(error?.response?.data?.message || '修改失败')
         })
       }
     }

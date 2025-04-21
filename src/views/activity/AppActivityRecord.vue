@@ -35,17 +35,14 @@
         </template>
       </el-table-column>
       <el-table-column label="参与人" align="center">
-        <template #default="scope">
-          <div>
-            <div v-for="(user, index) in scope.row.joinUserName" :key="index">{{ user }}</div>
-          </div>
-        </template>
-      </el-table-column>
+  <template #default="scope">
+    {{ parseJoinUsers(scope.row.joinUserNames).join('、') || '-' }}
+  </template>
+</el-table-column>
+
       <el-table-column label="操作" width="180" align="center">
         <template #default="scope">
-          <!-- 管理员：显示编辑按钮 -->
           <el-button size="mini" type="primary" v-if="isAdmin" @click="openEdit(scope.row)">编辑</el-button>
-          <!-- 普通用户：显示撤回按钮 -->
           <el-button size="mini" type="danger" v-else @click="quitActivity(scope.row.id)">撤回</el-button>
         </template>
       </el-table-column>
@@ -63,7 +60,7 @@
     />
 
     <!-- 编辑弹窗 -->
-    <el-dialog :title="'编辑活动记录'" :visible.sync="editDialogVisible" width="600px">
+    <el-dialog title="编辑活动记录" :visible.sync="editDialogVisible" width="600px">
       <el-form :model="editForm" label-width="100px">
         <el-form-item label="举办地点">
           <el-input v-model="editForm.site" />
@@ -83,6 +80,14 @@
             value-format="yyyy-MM-dd'T'HH:mm:ss"
             placeholder="选择结束时间"
           />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="editForm.status" placeholder="请选择状态">
+            <el-option :value="1" label="未开始" />
+            <el-option :value="2" label="进行中" />
+            <el-option :value="3" label="已完成" />
+            <el-option :value="4" label="已取消" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -118,9 +123,10 @@ export default {
         id: null,
         site: '',
         startTime: null,
-        endTime: null
+        endTime: null,
+        status: null
       },
-      isAdmin: false // 🔥 是否管理员喵
+      isAdmin: false
     }
   },
   created() {
@@ -128,15 +134,6 @@ export default {
     this.fetchData()
   },
   methods: {
-    formatStatus(row) {
-      switch (row.status) {
-        case 1: return '未开始'
-        case 2: return '进行中'
-        case 3: return '已完成'
-        case 4: return '已取消'
-        default: return '-'
-      }
-    },
     fetchData() {
       this.loading = true
       const payload = {
@@ -186,7 +183,8 @@ export default {
         id: row.id,
         site: row.site,
         startTime: row.startTime,
-        endTime: row.endTime
+        endTime: row.endTime,
+        status: row.status
       }
       this.editDialogVisible = true
     },
@@ -195,14 +193,32 @@ export default {
         id: this.editForm.id,
         site: this.editForm.site,
         startTime: this.editForm.startTime,
-        endTime: this.editForm.endTime
+        endTime: this.editForm.endTime,
+        status: this.editForm.status
       }
       service.post('/activity/updateActivityRecord', payload)
         .then(() => {
-          this.$message.success('保存成功喵～')
+          this.$message.success('保存成功')
           this.editDialogVisible = false
           this.fetchData()
         })
+        .catch(err => {
+          const msg = err?.response?.data?.message || '更新失败'
+          console.error('保存异常:', msg)
+          this.$message.error(msg)
+        })
+    },
+    formatStatus(status) {
+      const map = {
+        1: '未开始',
+        2: '进行中',
+        3: '已完成',
+        4: '已取消'
+      }
+      return map[status] || '-'
+    },
+    parseJoinUsers(str) {
+      return str ? str.split(',') : []
     }
   }
 }

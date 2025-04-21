@@ -45,17 +45,10 @@
       </el-table-column>
       <el-table-column prop="planChangeTime" label="计划变更时间" align="center" />
       <el-table-column prop="planLeaveTime" label="计划离社时间" align="center" />
-      <el-table-column label="状态" align="center">
+
+      <el-table-column label="操作" align="center" width="100">
         <template #default="scope">
-          <el-select
-            v-model="scope.row.status"
-            size="mini"
-            @change="updateStatus(scope.row)"
-            placeholder="请选择"
-          >
-            <el-option :value="0" label="无效" />
-            <el-option :value="1" label="生效" />
-          </el-select>
+          <el-button type="text" size="mini" @click="openEditDialog(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -70,6 +63,33 @@
       @current-change="handlePageChange"
       class="pagination"
     />
+
+    <!-- 编辑弹窗 -->
+    <el-dialog title="编辑异动记录" :visible.sync="editDialogVisible" width="500px">
+      <el-form :model="editForm" label-width="120px">
+        <el-form-item label="异动类型">
+          <el-select v-model="editForm.type" placeholder="请选择">
+            <el-option v-for="(label, val) in typeMap" :key="val" :label="label" :value="Number(val)" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="editForm.status" placeholder="请选择">
+            <el-option :value="0" label="无效" />
+            <el-option :value="1" label="生效" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="计划变更时间">
+          <el-date-picker v-model="editForm.planChangeTime" type="datetime" placeholder="请选择时间" />
+        </el-form-item>
+        <el-form-item label="计划离社时间">
+          <el-date-picker v-model="editForm.planLeaveTime" type="datetime" placeholder="可为空" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitEdit">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -95,12 +115,19 @@ export default {
         pageSize: 10
       },
       typeMap: {
-        0: '入职',
         1: '部门调整',
         2: '岗位调整',
         3: '晋升',
         4: '降职',
         5: '转正'
+      },
+      editDialogVisible: false,
+      editForm: {
+        id: null,
+        type: null,
+        status: null,
+        planChangeTime: '',
+        planLeaveTime: ''
       }
     }
   },
@@ -149,6 +176,29 @@ export default {
       }).then(() => {
         this.$message.success('状态已更新')
       })
+    },
+    openEditDialog(row) {
+      this.editForm = {
+        id: row.id,
+        type: row.type,
+        status: row.status,
+        planChangeTime: row.planChangeTime,
+        planLeaveTime: row.planLeaveTime
+      }
+      this.editDialogVisible = true
+    },
+    submitEdit() {
+      axios.post('/change/updateChangeRecord', this.editForm)
+        .then(() => {
+          this.$message.success('更新成功')
+          this.editDialogVisible = false
+          this.fetchData()
+        })
+        .catch(err => {
+          const msg = err?.response?.data?.message || err.message || '更新失败'
+          console.error('更新异常:', msg)
+          this.$message.error(msg)
+        })
     },
     handleSearch() {
       this.pageRequest.pageNo = 1
