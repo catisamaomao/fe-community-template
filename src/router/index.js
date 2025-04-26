@@ -145,8 +145,15 @@ const routes = [
   },
   {
     path: '*',
-    redirect: '/403'
+    name: 'NotFound',
+    component: () => import('@/views/App404Page.vue')
+  },
+  {
+    path: '/500',
+    name: 'ServerError',
+    component: () => import('@/views/App500Page.vue')
   }
+  
 ]
 
 const router = new VueRouter({

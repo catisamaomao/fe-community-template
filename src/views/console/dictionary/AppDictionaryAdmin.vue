@@ -165,20 +165,27 @@
         this.dialogVisible = true
       },
       submitForm() {
-        this.$refs.form.validate(valid => {
-          if (valid) {
-            const url = this.isEdit ? '/dictionary/updateDictionary' : '/dictionary/addDictionary'
-            service.post(url, this.form)
-              .then(() => {
-                this.$message.success(this.isEdit ? '编辑成功喵～！(ฅ>ω<*ฅ)' : '新增完成喵！ฅ^•ﻌ•^ฅ')
-                this.dialogVisible = false
-                this.fetchData()
-                // ✨ 成功后重新拉取字典缓存（如果你想同步更新 typeOptions）
-                this.$store.dispatch('fetchDictionaryOptions')
-              })
-          }
-        })
+  this.$refs.form.validate(valid => {
+    if (valid) {
+      const url = this.isEdit ? '/dictionary/updateDictionary' : '/dictionary/addDictionary'
+      
+      // 新增时去掉id字段
+      const payload = { ...this.form }
+      if (!this.isEdit) {
+        delete payload.id
       }
+
+      service.post(url, payload)
+        .then(() => {
+          this.$message.success(this.isEdit ? '编辑成功喵～！(ฅ>ω<*ฅ)' : '新增完成喵！ฅ^•ﻌ•^ฅ')
+          this.dialogVisible = false
+          this.fetchData()
+          this.$store.dispatch('fetchDictionaryOptions')
+        })
+    }
+  })
+}
+
     }
   }
   </script>
