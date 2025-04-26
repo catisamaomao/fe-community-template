@@ -30,6 +30,8 @@
       <span>控制台</span>
     </template>
     <el-menu-item index="/home/console/dictionary">字典管理</el-menu-item>
+    <el-menu-item index="/home/console/role">角色管理</el-menu-item>
+    <el-menu-item index="/home/console/permission">权限管理</el-menu-item>
   </el-submenu>
   <el-menu-item index="/home/department">
   <i class="el-icon-s-home"></i>

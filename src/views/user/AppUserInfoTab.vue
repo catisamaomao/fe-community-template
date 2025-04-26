@@ -47,10 +47,59 @@
           </el-tag>
         </template>
       </el-table-column>
+
+      <!-- 操作列 -->
       <el-table-column label="操作" align="center" width="180">
         <template #default="scope">
-          <el-button size="mini" type="warning" @click="openLeaveDialog(scope.row)">离社</el-button>
-          <el-button size="mini" type="primary" @click="openChangeDialog(scope.row)">异动</el-button>
+          <div class="action-buttons">
+            <!-- 离社按钮 -->
+            <div class="action-button">
+              <template v-if="scope.row.status !== 1">
+                <el-tooltip content="禁用用户不可操作" placement="top">
+                  <el-button
+                    size="mini"
+                    type="warning"
+                    :disabled="true"
+                  >
+                    离社
+                  </el-button>
+                </el-tooltip>
+              </template>
+              <template v-else>
+                <el-button
+                  size="mini"
+                  type="warning"
+                  @click="openLeaveDialog(scope.row)"
+                >
+                  离社
+                </el-button>
+              </template>
+            </div>
+
+            <!-- 异动按钮 -->
+            <div class="action-button">
+              <template v-if="scope.row.status !== 1">
+                <el-tooltip content="禁用用户不可操作" placement="top">
+                  <el-button
+                    size="mini"
+                    type="primary"
+                    :disabled="true"
+                  >
+                    异动
+                  </el-button>
+                </el-tooltip>
+              </template>
+              <template v-else>
+                <el-button
+                  size="mini"
+                  type="primary"
+                  @click="openChangeDialog(scope.row)"
+                >
+                  异动
+                </el-button>
+              </template>
+            </div>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -67,71 +116,85 @@
     />
 
     <!-- 离社申请弹窗 -->
-    <el-dialog title="新增离社申请" :visible.sync="leaveDialog.visible" width="400px">
-      <el-form :model="leaveDialog.form" label-width="100px">
-        <el-form-item label="离社原因">
-          <el-input type="textarea" v-model="leaveDialog.form.reason" placeholder="请输入原因" />
-        </el-form-item>
-        <el-form-item label="计划离社时间">
-          <el-date-picker v-model="leaveDialog.form.planLeaveTime" type="datetime" placeholder="选择时间" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="leaveDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="submitLeaveApply">提交</el-button>
-      </template>
-    </el-dialog>
+    <transition name="zoom-fade">
+      <el-dialog
+        title="新增离社申请"
+        :visible.sync="leaveDialog.visible"
+        width="400px"
+        :modal-append-to-body="false"
+      >
+        <el-form :model="leaveDialog.form" label-width="100px">
+          <el-form-item label="离社原因">
+            <el-input type="textarea" v-model="leaveDialog.form.reason" placeholder="请输入原因" />
+          </el-form-item>
+          <el-form-item label="计划离社时间">
+            <el-date-picker v-model="leaveDialog.form.planLeaveTime" type="datetime" placeholder="选择时间" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="leaveDialog.visible = false">取消</el-button>
+          <el-button type="primary" @click="submitLeaveApply">提交</el-button>
+        </template>
+      </el-dialog>
+    </transition>
 
     <!-- 异动记录弹窗 -->
-    <el-dialog title="新增异动记录" :visible.sync="changeDialog.visible" width="500px">
-      <el-form :model="changeDialog.form" label-width="150px">
-        <el-form-item label="异动类型">
-          <el-select v-model="changeDialog.form.type" placeholder="请选择类型">
-            <el-option :value="1" label="部门调整" />
-            <el-option :value="2" label="岗位调整" />
-            <el-option :value="3" label="晋升" />
-            <el-option :value="4" label="降职" />
-            <el-option :value="5" label="转正" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="计划完成异动时间">
-          <el-date-picker v-model="changeDialog.form.planChangeTime" type="datetime" placeholder="选择时间" />
-        </el-form-item>
-        <el-form-item label="计划离开原部门时间">
-          <el-date-picker v-model="changeDialog.form.planLeaveTime" type="datetime" placeholder="可为空" />
-        </el-form-item>
-        <el-form-item label="新部门">
-          <el-popover placement="bottom-start" width="300" trigger="click" v-model="deptSelect.newVisible">
-            <el-tree
-              :data="deptTree"
-              :props="deptTreeProps"
-              highlight-current
-              node-key="id"
-              default-expand-all
-              @node-click="(node) => selectDepartment('new', node)"
-            />
-            <el-input slot="reference" v-model="deptSelect.newName" placeholder="请选择新部门" readonly />
-          </el-popover>
-        </el-form-item>
-        <el-form-item label="原部门">
-          <el-popover placement="bottom-start" width="300" trigger="click" v-model="deptSelect.oldVisible">
-            <el-tree
-              :data="deptTree"
-              :props="deptTreeProps"
-              highlight-current
-              node-key="id"
-              default-expand-all
-              @node-click="(node) => selectDepartment('old', node)"
-            />
-            <el-input slot="reference" v-model="deptSelect.oldName" placeholder="请选择原部门" readonly />
-          </el-popover>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="changeDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="submitChangeRecord">提交</el-button>
-      </template>
-    </el-dialog>
+    <transition name="zoom-fade">
+      <el-dialog
+        title="新增异动记录"
+        :visible.sync="changeDialog.visible"
+        width="500px"
+        :modal-append-to-body="false"
+      >
+        <el-form :model="changeDialog.form" label-width="150px">
+          <el-form-item label="异动类型">
+            <el-select v-model="changeDialog.form.type" placeholder="请选择类型">
+              <el-option :value="1" label="部门调整" />
+              <el-option :value="2" label="岗位调整" />
+              <el-option :value="3" label="晋升" />
+              <el-option :value="4" label="降职" />
+              <el-option :value="5" label="转正" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="计划完成异动时间">
+            <el-date-picker v-model="changeDialog.form.planChangeTime" type="datetime" placeholder="选择时间" />
+          </el-form-item>
+          <el-form-item label="计划离开原部门时间">
+            <el-date-picker v-model="changeDialog.form.planLeaveTime" type="datetime" placeholder="可为空" />
+          </el-form-item>
+          <el-form-item label="新部门">
+            <el-popover placement="bottom-start" width="300" trigger="click" v-model="deptSelect.newVisible">
+              <el-tree
+                :data="deptTree"
+                :props="deptTreeProps"
+                highlight-current
+                node-key="id"
+                default-expand-all
+                @node-click="(node) => selectDepartment('new', node)"
+              />
+              <el-input slot="reference" v-model="deptSelect.newName" placeholder="请选择新部门" readonly />
+            </el-popover>
+          </el-form-item>
+          <el-form-item label="原部门">
+            <el-popover placement="bottom-start" width="300" trigger="click" v-model="deptSelect.oldVisible">
+              <el-tree
+                :data="deptTree"
+                :props="deptTreeProps"
+                highlight-current
+                node-key="id"
+                default-expand-all
+                @node-click="(node) => selectDepartment('old', node)"
+              />
+              <el-input slot="reference" v-model="deptSelect.oldName" placeholder="请选择原部门" readonly />
+            </el-popover>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="changeDialog.visible = false">取消</el-button>
+          <el-button type="primary" @click="submitChangeRecord">提交</el-button>
+        </template>
+      </el-dialog>
+    </transition>
   </div>
 </template>
 
@@ -241,7 +304,7 @@ export default {
         this.leaveDialog.visible = false
       })
     },
-    async openChangeDialog(user) {
+    openChangeDialog(user) {
       this.changeDialog.form = {
         userId: user.id,
         type: null,
@@ -258,7 +321,7 @@ export default {
         oldName: ''
       }
       this.changeDialog.visible = true
-      await this.loadDeptTree()
+      this.loadDeptTree()
     },
     async loadDeptTree() {
       const res = await axios.post('/department/listDepartmentTree')
@@ -276,10 +339,7 @@ export default {
       }
     },
     submitChangeRecord() {
-      const payload = {
-        ...this.changeDialog.form
-      }
-      axios.post('/change/addChangeRecord', payload).then(() => {
+      axios.post('/change/addChangeRecord', this.changeDialog.form).then(() => {
         this.$message.success('异动记录提交成功')
         this.changeDialog.visible = false
       })
@@ -304,5 +364,31 @@ export default {
 .pagination {
   margin-top: 20px;
   text-align: right;
+}
+
+/* 按钮动效 */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.action-button {
+  display: inline-block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 弹窗动效 */
+.zoom-fade-enter-active,
+.zoom-fade-leave-active {
+  transition: all 0.3s ease;
+}
+.zoom-fade-enter, .zoom-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(-20px);
 }
 </style>

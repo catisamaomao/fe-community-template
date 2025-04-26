@@ -58,11 +58,8 @@ export default {
             this.$message.success('登录成功')
             localStorage.setItem('token', res.token)
             localStorage.setItem('userId', res.user.id)
-
-            // 登录成功后，拉取用户信息 & 字典缓存
-            await this.$store.dispatch('fetchUserInfo')
-            await this.$store.dispatch('fetchDictionaryOptions')
-
+            // 登录成功后，拉取用户初始化信息
+            await this.$store.dispatch('fetchAllInitData')
             this.$router.push('/home')
           })
           .catch(err => {
