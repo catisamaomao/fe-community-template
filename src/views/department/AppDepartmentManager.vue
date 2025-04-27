@@ -38,7 +38,11 @@
             <el-table-column prop="id" label="ID" width="80" />
             <el-table-column prop="name" label="部门名称" />
             <el-table-column prop="level" label="层级" />
-            <el-table-column label="状态" :formatter="formatStatus" />
+            <el-table-column label="状态">
+              <template #default="scope">
+                {{ formatStatus(scope.row.status) }}
+              </template>
+            </el-table-column>
           </el-table>
 
           <el-divider content-position="left">部门成员列表</el-divider>
@@ -64,13 +68,13 @@
       </el-col>
     </el-row>
 
-    <!-- 弹窗：新增/修改 -->
+    <!-- 弹窗 -->
     <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="500px">
       <el-form :model="form" label-width="100px" :rules="rules" ref="formRef">
         <el-form-item label="部门名称" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
-        <el-form-item label="负责人ID">
+        <el-form-item label="负责人ID" prop="leaderUserId">
           <el-input v-model="form.leaderUserId" />
         </el-form-item>
         <el-form-item label="部门状态" prop="status">
@@ -80,30 +84,41 @@
           </el-select>
         </el-form-item>
         <el-form-item label="上级部门">
-          <el-popover
-            ref="popover"
-            placement="bottom-start"
-            width="300"
-            trigger="click"
-            v-model="treePopoverVisible"
-          >
-            <el-tree
-              :data="treeData"
-              :props="defaultProps"
-              highlight-current
-              node-key="id"
-              default-expand-all
-              @node-click="selectParent"
-              :render-content="renderTreeNode"
-            />
-            <el-input
-              slot="reference"
-              v-model="selectedParentName"
-              placeholder="请选择上级部门"
-              readonly
-            />
-          </el-popover>
-        </el-form-item>
+  <el-popover
+    ref="popover"
+    placement="bottom-start"
+    width="300"
+    trigger="click"
+    v-model="treePopoverVisible"
+  >
+    <el-tree
+      :data="treeData"
+      :props="defaultProps"
+      highlight-current
+      node-key="id"
+      default-expand-all
+      @node-click="selectParent"
+      :render-content="renderTreeNode"
+    />
+    />
+    <template #reference>
+      <div style="display: flex; align-items: center;">
+        <el-input
+          v-model="selectedParentName"
+          placeholder="请选择上级部门"
+          readonly
+          style="flex: 1;"
+        />
+        <el-button
+          type="text"
+          icon="el-icon-close"
+          @click.stop="clearParent"
+          style="margin-left: 5px;"
+        />
+      </div>
+    </template>
+  </el-popover>
+</el-form-item>
         <el-form-item label="部门描述">
           <el-input v-model="form.remark" type="textarea" rows="3" />
         </el-form-item>
@@ -126,7 +141,6 @@ export default {
       filterText: '',
       treeData: [],
       currentDept: null,
-      leaderName: '',
       childDepartments: [],
       memberList: [],
       loading: { child: false, member: false },
@@ -144,6 +158,7 @@ export default {
       selectedParentName: '',
       rules: {
         name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
+        leaderUserId: [{ required: true, message: '请输入负责人ID', trigger: 'blur' }],
         status: [{ required: true, message: '请选择状态', trigger: 'change' }]
       },
       defaultProps: { children: 'children', label: 'name', value: 'id' }
@@ -167,13 +182,7 @@ export default {
       return !value || data.name.includes(value)
     },
     formatStatus(val) {
-      if (val != null) {
-        if (typeof val === 'object' && 'status' in val) {
-          return val.status === 1 ? '启用' : '禁用'
-        }
-        return val === 1 ? '启用' : '禁用'
-      }
-      return '-'
+      return val === 1 ? '启用' : val === 0 ? '禁用' : '-'
     },
     formatType(row) {
       const map = { 0: '开发者', 1: '普通成员', 2: '干部', 3: '管理员' }
@@ -203,10 +212,6 @@ export default {
         ])
         this.childDepartments = childRes || []
         this.memberList = memberRes || []
-        if (dept.leaderUserId) {
-          const userInfoRes = await axios.post('/getUserInfo', { userId: dept.leaderUserId })
-          this.currentDept.leaderName = userInfoRes?.name || ''
-        }
       } finally {
         this.loading.child = false
         this.loading.member = false
@@ -237,32 +242,35 @@ export default {
       }
       this.selectedParentName = this.currentDept?.name || ''
     },
-    openEditDialog() {
+    async openEditDialog() {
       if (!this.currentDept) return
       this.isEdit = true
       this.dialogVisible = true
-      Object.assign(this.form, {
-        id: this.currentDept.id,
-        name: this.currentDept.name,
-        leaderUserId: this.currentDept.leaderUserId,
-        parentId: this.currentDept.parentId,
-        status: this.currentDept.status,
-        remark: this.currentDept.remark
-      })
-      this.selectedParentName = this.findDeptNameById(this.form.parentId)
-    },
-    findDeptNameById(id) {
-      const find = (nodes) => {
-        for (const node of nodes) {
-          if (node.id === id) return node.name
-          if (node.children) {
-            const found = find(node.children)
-            if (found) return found
+      try {
+        const dept = await axios.post('/department/getById', { id: this.currentDept.id })
+        if (dept) {
+          this.form.id = dept.id
+          this.form.name = dept.name
+          this.form.leaderUserId = dept.leaderUserId
+          this.form.status = dept.status
+          this.form.parentId = dept.parentId
+          this.form.remark = dept.remark
+
+          if (dept.parentId) {
+            let parentNode = this.findDeptById(dept.parentId)
+            if (parentNode) {
+              this.selectedParentName = parentNode.name
+            } else {
+              const parentDept = await axios.post('/department/getById', { id: dept.parentId })
+              this.selectedParentName = parentDept?.name || ''
+            }
+          } else {
+            this.selectedParentName = ''
           }
         }
-        return ''
+      } catch (e) {
+        console.error('加载部门信息失败', e)
       }
-      return find(this.treeData)
     },
     selectParent(node) {
       if (this.isEdit && node.id === this.form.id) {
@@ -272,6 +280,10 @@ export default {
       this.form.parentId = node.id
       this.selectedParentName = node.name
       this.treePopoverVisible = false
+    },
+    clearParent() {
+      this.form.parentId = null
+      this.selectedParentName = ''
     },
     renderTreeNode(h, { node, data }) {
       return h('span', {}, [
@@ -294,7 +306,7 @@ export default {
             await this.handleNodeClick(this.currentDept)
           }
         } catch (e) {
-          this.$message.error(e.message || '操作失败')
+          this.$message.error(e || '操作失败')
         }
       })
     }
